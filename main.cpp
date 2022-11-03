@@ -170,6 +170,21 @@ void Initialize() {
         XMin, YMax,
         XMax, YMax,
         XMax, 50,
+        // Windows
+        //   - back
+        12.5, 20,
+        13.5, 24,
+        19, 24,
+        19, 24,
+        19, 20,
+        12.5, 20,
+        //   - front
+        20, 20,
+        20, 24,
+        24.75, 24,
+        20, 20,
+        24.75, 24,
+        28.5, 20,
     };
 
     GLfloat colors[] = {
@@ -227,6 +242,19 @@ void Initialize() {
         0.37, 0.57, 0.15, 1.0,
         0.37, 0.57, 0.15, 1.0,
         0.37, 0.57, 0.15, 1.0,
+        // Windows
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
+        0.14, 0.58, 0.75, 1.0,
     };
 
     glGenVertexArrays(1, &VaoId);
@@ -365,6 +393,11 @@ void Render() {
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
+    // Windows
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 48, 12);
+
     // Car 2
     transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
@@ -378,6 +411,11 @@ void Render() {
     transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * centerWheel;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    // Windows
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 48, 12);
 
     glFlush();
 }
