@@ -286,11 +286,22 @@ float WiggleWave(float t) {
     return 0;
 }
 
+float RotateWave(float t) {
+    double r = t - glm::floor(t / Period) * Period;
+    if (1 <= r && r < 1.5) {
+        return glm::sin(glm::pi<float>() * (r - 1) * 2);
+    } else if (1.5 <= r && r < 2) {
+        return -glm::sin(glm::pi<float>() * (r - 1.5) * 2);
+    }
+    return 0;
+}
+
 auto id = glm::identity<glm::mat4>();
 glm::vec3 upMovVec = glm::vec3(0.0, 30.0, 0.0);
 glm::vec3 horizMovVec = glm::vec3(XMax - 40, 0.0, 0.0);
 glm::mat4 wheelStride = glm::translate(id, glm::vec3(13, 0.0, 0.0));
 glm::vec3 wheelToOrigin(15.5, 10.0, 0.0);
+glm::vec3 carToOrigin(12.5, 15, 0.0);
 
 void Render() {
     const auto elapsedTime = glfwGetTime();
@@ -307,6 +318,9 @@ void Render() {
 
     glm::mat4 wiggle1 = glm::translate(id, glm::vec3(WiggleWave(elapsedTime), 0.0, 0.0));
     glm::mat4 wiggle2 = glm::translate(id, glm::vec3(WiggleWave(elapsedTime + Period / 2), 0.0, 0.0));
+
+    glm::mat4 rotateMat1 = glm::rotate(id, glm::pi<float>() / 9 * RotateWave(elapsedTime), glm::vec3(0, 0, 1));
+    glm::mat4 rotateMat2 = glm::rotate(id, glm::pi<float>() / 9 * RotateWave(elapsedTime + Period / 2), glm::vec3(0, 0, 1));
 
     // Grass
     transform = ResizeMat;
@@ -331,7 +345,9 @@ void Render() {
     }
 
     // Car 1
-    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1;
+    glm::mat4 carToOriginMat = glm::translate(id, -carToOrigin);
+    glm::mat4 carBackMat = glm::translate(id, carToOrigin);
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 0, 12);
 
@@ -341,25 +357,25 @@ void Render() {
     float rotationPeriod = 1.0f;
     glm::mat4 rotateWheel = glm::rotate(id, (float) -(glm::pi<float>() * 2 * (elapsedTime / rotationPeriod - glm::floor(elapsedTime / rotationPeriod))), glm::vec3(0.0, 0.0, 1.0));
 
-    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * moveBackWheel * rotateWheel * centerWheel;
-    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * moveBackWheel * rotateWheel * centerWheel;
+        glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
-    transform = ResizeMat * scale1 * wheelStride * translateUp1 * translateHorizontal1 * wiggle1 * moveBackWheel * rotateWheel * centerWheel;
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * centerWheel;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
     // Car 2
-    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2;
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 0, 12);
 
     // Wheels
-    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * moveBackWheel * rotateWheel * centerWheel;
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * moveBackWheel * rotateWheel * centerWheel;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
-    transform = ResizeMat * scale2 * wheelStride * translateUp2 * translateHorizontal2 * wiggle2 * moveBackWheel * rotateWheel * centerWheel;
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * centerWheel;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
