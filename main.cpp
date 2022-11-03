@@ -21,7 +21,7 @@
 #include <iostream>
 
 GLFWwindow* Window;
-GLuint ProgramId, VaoId, VboId, ColorBufferId;
+GLuint ProgramId, WhiteProgramId, VaoId, VboId, ColorBufferId;
 GLfloat XMin = 0, XMax = 100, YMin = 0, YMax = 100;
 GLint TransformLoc;
 glm::mat4 ResizeMat;
@@ -50,6 +50,16 @@ out vec4 out_Color;
 
 void main() {
     out_Color = ex_Color;
+}
+)SHADER-SOURCE";
+
+const char* WhiteFragmentShaderSource = R"SHADER-SOURCE(
+#version 330 core
+
+out vec4 out_Color;
+
+void main() {
+    out_Color = vec4(1.0);
 }
 )SHADER-SOURCE";
 
@@ -185,6 +195,17 @@ void Initialize() {
         20, 20,
         24.75, 24,
         28.5, 20,
+        // Wheel spokes
+        15.5, 10,
+        12.5, 11,
+        14.5, 13,
+        16.5, 13,
+        18.5, 11,
+        18.5, 9,
+        16.5, 7,
+        14.5, 7,
+        12.5, 9,
+        12.5, 11,
     };
 
     GLfloat colors[] = {
@@ -255,6 +276,17 @@ void Initialize() {
         0.14, 0.58, 0.75, 1.0,
         0.14, 0.58, 0.75, 1.0,
         0.14, 0.58, 0.75, 1.0,
+        // Wheel spokes
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
+        0.7, 0.7, 0.7, 1.0,
     };
 
     glGenVertexArrays(1, &VaoId);
@@ -275,6 +307,7 @@ void Initialize() {
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     ProgramId = LoadShaders(VertexShaderSource, FragmentShaderSource);
+    WhiteProgramId = LoadShaders(VertexShaderSource, WhiteFragmentShaderSource);
 
     TransformLoc = glGetUniformLocation(ProgramId, "transform");
 
@@ -325,13 +358,17 @@ float RotateWave(float t) {
 }
 
 auto id = glm::identity<glm::mat4>();
-glm::vec3 upMovVec = glm::vec3(0.0, 30.0, 0.0);
-glm::vec3 horizMovVec = glm::vec3(XMax - 40, 0.0, 0.0);
+glm::vec3 upMovVec(0.0, 30.0, 0.0);
+glm::vec3 horizMovVec(XMax - 40, 0.0, 0.0);
 glm::mat4 wheelStride = glm::translate(id, glm::vec3(13, 0.0, 0.0));
 glm::vec3 wheelToOrigin(15.5, 10.0, 0.0);
 glm::vec3 carToOrigin(12.5, 15, 0.0);
+glm::mat4 wheelWhiteRingScale = glm::scale(id, glm::vec3(0.75, 0.75, 1.0));
+glm::mat4 wheelInnerRingScale = glm::scale(id, glm::vec3(0.65, 0.65, 1.0));
 
 void Render() {
+    glUseProgram(ProgramId);
+
     const auto elapsedTime = glfwGetTime();
     glm::mat4 transform;
 
@@ -393,6 +430,40 @@ void Render() {
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
 
+    glUseProgram(WhiteProgramId);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * moveBackWheel * rotateWheel * wheelWhiteRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelWhiteRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    glUseProgram(ProgramId);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+
+    // Wheel spokes
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLE_FAN, 60, 10);
+
+    transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLE_FAN, 60, 10);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     // Windows
     transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
@@ -411,6 +482,39 @@ void Render() {
     transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * centerWheel;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    glUseProgram(WhiteProgramId);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * moveBackWheel * rotateWheel * wheelWhiteRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelWhiteRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    glUseProgram(ProgramId);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 12, 18);
+
+    // Wheel spokes
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLE_FAN, 60, 10);
+
+    transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat * wheelStride * moveBackWheel * rotateWheel * wheelInnerRingScale * centerWheel;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLE_FAN, 60, 10);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Windows
     transform = ResizeMat * scale2 * translateUp2 * translateHorizontal2 * wiggle2 * carBackMat * rotateMat2 * carToOriginMat;
