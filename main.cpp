@@ -175,10 +175,10 @@ void Initialize() {
         XMin + 10, 24,
         // Grass
         XMin, 50,
-        XMin, YMax,
+        XMin, 70,
         XMax, 50,
-        XMin, YMax,
-        XMax, YMax,
+        XMin, 70,
+        XMax, 70,
         XMax, 50,
         // Windows
         //   - back
@@ -206,6 +206,13 @@ void Initialize() {
         14.5, 7,
         12.5, 9,
         12.5, 11,
+        // Sky
+        XMin, 70,
+        XMin, YMax,
+        XMax, 70,
+        XMin, YMax,
+        XMax, YMax,
+        XMax, 70,
     };
 
     GLfloat colors[] = {
@@ -287,6 +294,18 @@ void Initialize() {
         0.7, 0.7, 0.7, 1.0,
         0.7, 0.7, 0.7, 1.0,
         0.7, 0.7, 0.7, 1.0,
+        // Sky
+        0.5, 0.5, 0.9, 1.0,
+        0.3, 0.3, 0.7, 1.0,
+        0.5, 0.5, 0.9, 1.0,
+        0.3, 0.3, 0.7, 1.0,
+        0.3, 0.3, 0.7, 1.0,
+        0.5, 0.5, 0.9, 1.0,
+//        0.37, 0.57, 0.15, 1.0,
+//        0.37, 0.57, 0.15, 1.0,
+//        0.37, 0.57, 0.15, 1.0,
+//        0.37, 0.57, 0.15, 1.0,
+//        0.37, 0.57, 0.15, 1.0,
     };
 
     glGenVertexArrays(1, &VaoId);
@@ -392,6 +411,11 @@ void Render() {
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
     glDrawArrays(GL_TRIANGLES, 42, 6);
 
+    // Sky
+    transform = ResizeMat;
+    glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glDrawArrays(GL_TRIANGLES, 70, 6);
+
     // Road
     transform = ResizeMat;
     glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, &transform[0][0]);
@@ -419,7 +443,7 @@ void Render() {
     // Wheels
     glm::mat4 centerWheel = glm::translate(id, -wheelToOrigin);
     glm::mat4 moveBackWheel = glm::translate(id, wheelToOrigin);
-    float rotationPeriod = 1.0f;
+    float rotationPeriod = 0.5f;
     glm::mat4 rotateWheel = glm::rotate(id, (float) -(glm::pi<float>() * 2 * (elapsedTime / rotationPeriod - glm::floor(elapsedTime / rotationPeriod))), glm::vec3(0.0, 0.0, 1.0));
 
     transform = ResizeMat * scale1 * translateUp1 * translateHorizontal1 * wiggle1 * carBackMat * rotateMat1 * carToOriginMat * moveBackWheel * rotateWheel * centerWheel;
